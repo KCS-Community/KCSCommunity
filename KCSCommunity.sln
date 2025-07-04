@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleHelloWorld", "ConsoleHelloWorld\ConsoleHelloWorld.csproj", "{5D290734-6410-4EF5-8C56-12E51155A433}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplicationPlayground", "WebApplicationPlayground\WebApplicationPlayground.csproj", "{6278775E-EB5E-4016-A826-72496E921872}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCSCommunity.Infrastructure", "KCSCommunity.Infrastructure\KCSCommunity.Infrastructure.csproj", "{AEF5065D-D833-4884-8B6E-29E7C0A44BB5}"
@@ -20,10 +18,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5D290734-6410-4EF5-8C56-12E51155A433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D290734-6410-4EF5-8C56-12E51155A433}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D290734-6410-4EF5-8C56-12E51155A433}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D290734-6410-4EF5-8C56-12E51155A433}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6278775E-EB5E-4016-A826-72496E921872}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6278775E-EB5E-4016-A826-72496E921872}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6278775E-EB5E-4016-A826-72496E921872}.Release|Any CPU.ActiveCfg = Release|Any CPU
