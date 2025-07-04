@@ -4,6 +4,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleHelloWorld", "Consol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplicationPlayground", "WebApplicationPlayground\WebApplicationPlayground.csproj", "{6278775E-EB5E-4016-A826-72496E921872}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCSCommunity.Infrastructure", "KCSCommunity.Infrastructure\KCSCommunity.Infrastructure.csproj", "{AEF5065D-D833-4884-8B6E-29E7C0A44BB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCSCommunity.Domain", "KCSCommunity.Domain\KCSCommunity.Domain.csproj", "{CE17D202-8121-43FD-A5B2-9136621DAA11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCSCommunity.Abstractions", "KCSCommunity.Abstractions\KCSCommunity.Abstractions.csproj", "{49C14C16-087B-4D03-B8EA-C413257269B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCSCommunity.Application", "KCSCommunity.Application\KCSCommunity.Application.csproj", "{15BC97E4-A569-4431-8E88-E725B82D234B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCSCommunity.Access", "KCSCommunity.Access\KCSCommunity.Access.csproj", "{84576929-DC90-4DA6-B9EC-501C8C5D4F14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +28,25 @@ Global
 		{6278775E-EB5E-4016-A826-72496E921872}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6278775E-EB5E-4016-A826-72496E921872}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6278775E-EB5E-4016-A826-72496E921872}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEF5065D-D833-4884-8B6E-29E7C0A44BB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEF5065D-D833-4884-8B6E-29E7C0A44BB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEF5065D-D833-4884-8B6E-29E7C0A44BB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEF5065D-D833-4884-8B6E-29E7C0A44BB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE17D202-8121-43FD-A5B2-9136621DAA11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE17D202-8121-43FD-A5B2-9136621DAA11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE17D202-8121-43FD-A5B2-9136621DAA11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE17D202-8121-43FD-A5B2-9136621DAA11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49C14C16-087B-4D03-B8EA-C413257269B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49C14C16-087B-4D03-B8EA-C413257269B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49C14C16-087B-4D03-B8EA-C413257269B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49C14C16-087B-4D03-B8EA-C413257269B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15BC97E4-A569-4431-8E88-E725B82D234B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15BC97E4-A569-4431-8E88-E725B82D234B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15BC97E4-A569-4431-8E88-E725B82D234B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15BC97E4-A569-4431-8E88-E725B82D234B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84576929-DC90-4DA6-B9EC-501C8C5D4F14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84576929-DC90-4DA6-B9EC-501C8C5D4F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84576929-DC90-4DA6-B9EC-501C8C5D4F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84576929-DC90-4DA6-B9EC-501C8C5D4F14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

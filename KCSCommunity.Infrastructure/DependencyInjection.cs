@@ -1,0 +1,60 @@
+using KCSCommunity.Abstractions.Interfaces;
+using KCSCommunity.Domain.Entities;
+using KCSCommunity.Infrastructure.Persistence;
+using KCSCommunity.Infrastructure.Security.Hashing;
+using KCSCommunity.Infrastructure.Security.Jwt;
+using KCSCommunity.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+namespace KCSCommunity.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        //JWT Settings
+        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
+        
+        //数据库
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
+        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequiredLength = 8;
+                options.User.RequireUniqueEmail = true;
+                
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders(); //password reset/2FA tokens
+
+        //服务
+        services.AddScoped<IPasswordHasher<ApplicationUser>, Argon2PasswordHasher>();
+        services.AddScoped<IJwtService, JwtService>();
+        
+        // 锁，后期考虑Redis-based
+        services.AddSingleton<IResourceLockService, InMemoryLockService>();
+
+        return services;
+    }
+    
+    public static async Task InitializeDatabaseAsync(this IServiceProvider serviceProvider)
+    {
+        await DbInitializer.InitializeAsync(serviceProvider);
+    }
+}

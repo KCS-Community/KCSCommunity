@@ -1,0 +1,2 @@
+namespace KCSCommunity.Application.Features.Users.Queries.GetUser;
+public record UserDto(Guid Id, string UserName, string? Email, string RealName, string? Nickname, string? AvatarUrl, bool IsActive, IEnumerable<string> Roles);

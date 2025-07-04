@@ -1,0 +1,14 @@
+[
+  
+"ApiSignature":
+  {
+    "Enabled": true,
+    "TimeWindowSeconds": 300,
+    "ApiKeys": [
+      {
+        "Key": "YOUR_CLIENT_API_KEY_HERE_FOR_DEV",
+        "Secret": "YOUR_CLIENT_API_SECRET_HERE_FOR_SIGNING_IN_DEV"
+      }
+    ]
+  }
+]
