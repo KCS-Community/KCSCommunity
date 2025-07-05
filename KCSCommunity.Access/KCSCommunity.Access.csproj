@@ -21,4 +21,10 @@
       <ProjectReference Include="..\KCSCommunity.Infrastructure\KCSCommunity.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\README.md">
+        <Link>README.md</Link>
+      </Content>
+    </ItemGroup>
+
 </Project>
