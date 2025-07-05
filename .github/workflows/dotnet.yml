@@ -37,7 +37,7 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
           dotnet build ./KCSCommunity.Access/KCSCommunity.Access.csproj --configuration Debug
-          dotnet swagger tofile \
+          swagger tofile \
             --output swagger.json \
             ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
             v1
