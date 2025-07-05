@@ -26,12 +26,15 @@ jobs:
 
     - name: Test
       run: dotnet test --no-build --verbosity normal
-
+      
     - name: Install Swagger CLI
-      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-
+      run: |
+        dotnet tool install --global Swashbuckle.AspNetCore.Cli
+        echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+      
     - name: Generate swagger.json
       run: |
+        dotnet build ./KCSCommunity.Access/KCSCommunity.Access.csproj --configuration Debug
         dotnet swagger tofile \
           --output swagger.json \
           ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
