@@ -28,24 +28,21 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
       
-      # ✅ 安装 Swagger CLI 工具
+      # ✅ 安装 Swagger CLI 工具（只安装）
       - name: Install Swagger CLI
         run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
       
-      # ✅ 将 CLI 工具加入 PATH
-      - name: Add dotnet tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-      
-      # ✅ 生成 swagger.json
+      # ✅ 添加 PATH 并生成 swagger.json（必须同一 step）
       - name: Generate swagger.json
         run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
           dotnet build ./KCSCommunity.Access/KCSCommunity.Access.csproj --configuration Debug
           dotnet swagger tofile \
             --output swagger.json \
             ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
             v1
       
-      # ✅ 使用 Legion2/swagger-ui-action@v1.3.0 生成 Swagger UI 静态页面
+      # ✅ 生成 Swagger UI 静态页面
       - name: Generate Swagger UI
         uses: Legion2/swagger-ui-action@v1.3.0
         with:
@@ -53,7 +50,7 @@ jobs:
           spec-file: swagger.json
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      # ✅ 发布到 GitHub Pages
+      # ✅ 部署到 GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
