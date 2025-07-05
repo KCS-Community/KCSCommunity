@@ -1,4 +1,5 @@
 using KCSCommunity.Application.Features.Users.Commands.ActivateUser;
+using KCSCommunity.Application.Features.Users.Commands.ChangePassword;
 using KCSCommunity.Application.Features.Users.Commands.CreateUser;
 using KCSCommunity.Application.Features.Users.Queries.GetUser;
 using KCSCommunity.Domain.Constants;
@@ -34,6 +35,14 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ActivateUser(ActivateUserCommand command)
+    {
+        await Mediator.Send(command);
+        return NoContent();
+    }
+    
+    [Authorize] // Any authenticated user can change their own password
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
     {
         await Mediator.Send(command);
         return NoContent();

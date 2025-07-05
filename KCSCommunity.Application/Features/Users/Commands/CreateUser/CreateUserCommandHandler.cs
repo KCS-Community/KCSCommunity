@@ -7,14 +7,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
+using KCSCommunity.Abstractions.Models.Configuration;
+
 namespace KCSCommunity.Application.Features.Users.Commands.CreateUser;
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, CreateUserResponse>
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IApplicationDbContext _context;
     private readonly ILogger<CreateUserCommandHandler> _logger;
-    public CreateUserCommandHandler(UserManager<ApplicationUser> userManager, IApplicationDbContext context, ILogger<CreateUserCommandHandler> logger)
-    { _userManager = userManager; _context = context; _logger = logger; }
+    private readonly PasscodeSettings _passcodeSettings;
+    public CreateUserCommandHandler(UserManager<ApplicationUser> userManager, IApplicationDbContext context, ILogger<CreateUserCommandHandler> logger, PasscodeSettings passcodeSettings)
+    { _userManager = userManager; _context = context; _logger = logger;_passcodeSettings = passcodeSettings; }
 
     public async Task<CreateUserResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
@@ -40,7 +43,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
                     _logger.LogError("Failed to generate a unique OneTimePasscode after {MaxAttempts} attempts.", maxRetryAttempts);
                     throw new InvalidOperationException("Could not generate a unique passcode.");
                 }
-                passcode = OneTimePasscode.Create(user.Id);
+                passcode = OneTimePasscode.Create(user.Id, _passcodeSettings.LifespanMinutes);
             } while (await _context.OneTimePasscodes.AnyAsync(p => p.Code == passcode.Code, cancellationToken));
             
             await _context.OneTimePasscodes.AddAsync(passcode, cancellationToken);

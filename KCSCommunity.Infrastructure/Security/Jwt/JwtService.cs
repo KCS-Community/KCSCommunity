@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using KCSCommunity.Abstractions.Models.Configuration;
 
 namespace KCSCommunity.Infrastructure.Security.Jwt;
 

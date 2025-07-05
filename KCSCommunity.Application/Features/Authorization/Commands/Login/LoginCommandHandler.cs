@@ -1,9 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using KCSCommunity.Abstractions.Interfaces;
 using KCSCommunity.Application.Common.Exceptions;
 using KCSCommunity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation.Results;
+using KCSCommunity.Abstractions.Models.Configuration;
 
 namespace KCSCommunity.Application.Features.Authorization.Commands.Login;
 
@@ -12,15 +14,21 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtService _jwtService;
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
+    private readonly IApplicationDbContext _context;
+    private readonly JwtSettings _jwtSettings;
 
     public LoginCommandHandler(
         UserManager<ApplicationUser> userManager,
         IJwtService jwtService,
-        IPasswordHasher<ApplicationUser> passwordHasher)
+        IPasswordHasher<ApplicationUser> passwordHasher,
+        IApplicationDbContext context,          // 新增
+        JwtSettings jwtSettings)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _passwordHasher = passwordHasher;
+        _context = context;
+        _jwtSettings = jwtSettings;
     }
 
     public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -77,9 +85,34 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         
         await _userManager.ResetAccessFailedCountAsync(user);
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = _jwtService.GenerateToken(user, roles);
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var accessToken = _jwtService.GenerateToken(user, roles);
 
-        return new LoginResponse(token);
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(accessToken);
+            var jti = jwtToken.Id;
+
+            var refreshToken = new Domain.Entities.RefreshToken
+            {
+                UserId = user.Id,
+                Token = Domain.Entities.RefreshToken.GenerateTokenValue(),
+                JwtId = jti,
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays)
+            };
+            
+            await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return new LoginResponse(accessToken, refreshToken.Token, user.Id);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 }

@@ -20,4 +20,8 @@
       <ProjectReference Include="..\KCSCommunity.Domain\KCSCommunity.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Security\Passcode\" />
+    </ItemGroup>
+
 </Project>

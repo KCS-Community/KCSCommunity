@@ -1,4 +1,5 @@
 using KCSCommunity.Abstractions.Interfaces;
+using KCSCommunity.Abstractions.Models.Configuration;
 using KCSCommunity.Domain.Entities;
 using KCSCommunity.Infrastructure.Persistence;
 using KCSCommunity.Infrastructure.Security.Hashing;
@@ -17,8 +18,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         //JWT Settings
-        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-        services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
+        //services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+        //services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
         
         //数据库
         services.AddDbContext<ApplicationDbContext>(options =>

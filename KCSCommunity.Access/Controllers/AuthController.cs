@@ -1,4 +1,7 @@
 using KCSCommunity.Application.Features.Authorization.Commands.Login;
+using KCSCommunity.Application.Features.Authorization.Commands.RefreshToken;
+using KCSCommunity.Application.Features.Authorization.Commands.RevokeToken;
+using KCSCommunity.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,5 +16,20 @@ public class AuthController : ApiControllerBase
     public async Task<ActionResult<LoginResponse>> Login(LoginCommand command)
     {
         return Ok(await Mediator.Send(command));
+    }
+    
+    [HttpPost("refresh")]
+    [AllowAnonymous] // Refresh endpoint is public
+    public async Task<ActionResult<LoginResponse>> Refresh(RefreshTokenCommand command)
+    {
+        return Ok(await Mediator.Send(command));
+    }
+
+    [Authorize(Policy = PolicyConstants.AdminOrOwner)]
+    [HttpPost("revoke/{userId:guid}")]
+    public async Task<IActionResult> Revoke(Guid userId)
+    {
+        await Mediator.Send(new RevokeTokenCommand(userId));
+        return NoContent();
     }
 }

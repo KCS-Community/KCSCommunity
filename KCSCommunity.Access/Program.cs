@@ -8,9 +8,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using KCSCommunity.Abstractions.Models.Configuration;
 using KCSCommunity.Infrastructure.Security.Jwt;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOptions<JwtSettings>()
+    .Bind(builder.Configuration.GetSection(JwtSettings.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<PasscodeSettings>()
+    .Bind(builder.Configuration.GetSection(PasscodeSettings.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 // Add services from other layers
 builder.Services.AddApplicationServices();
@@ -51,6 +63,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()!;
 var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<PasscodeSettings>>().Value);
 
 builder.Services
     .AddAuthentication(options =>

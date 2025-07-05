@@ -8,6 +8,7 @@ public interface IApplicationDbContext
 {
     DbSet<ApplicationUser> Users { get; }
     DbSet<OneTimePasscode> OneTimePasscodes { get; }
+    DbSet<RefreshToken> RefreshTokens { get; }
     
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
