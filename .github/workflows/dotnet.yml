@@ -1,0 +1,57 @@
+name: .NET Swagger Docs
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Install Swagger CLI
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
+
+    - name: Generate swagger.json
+      run: |
+        dotnet swagger tofile \
+          --output swagger.json \
+          ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
+          v1
+
+    - name: Download swagger-ui-dist
+      run: |
+        mkdir swagger-ui
+        curl -L https://github.com/swagger-api/swagger-ui/archive/refs/heads/master.zip -o swagger-ui.zip
+        unzip swagger-ui.zip
+        mv swagger-ui-master/dist swagger-ui
+
+    - name: Copy swagger.json into Swagger UI
+      run: |
+        cp swagger.json swagger-ui/swagger.json
+        sed -i 's|https://petstore.swagger.io/v2/swagger.json|./swagger.json|g' swagger-ui/index.html
+
+    - name: Deploy Swagger UI to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./swagger-ui
+        publish_branch: gh-pages
