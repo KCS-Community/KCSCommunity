@@ -1,4 +1,4 @@
-name: .NET Swagger Docs
+name: Build, Test, and Deploy Swagger UI
 
 on:
   push:
@@ -7,11 +7,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-test-and-deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -26,39 +27,36 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
-
+      
+      # ✅ 安装 Swagger CLI 工具
       - name: Install Swagger CLI
         run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-
+      
+      # ✅ 将 CLI 工具加入 PATH
+      - name: Add dotnet tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+      
+      # ✅ 生成 swagger.json
       - name: Generate swagger.json
         run: |
-          $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
-          dotnet build .\KCSCommunity.Access\KCSCommunity.Access.csproj --configuration Debug
-          dotnet swagger tofile `
-            --output swagger.json `
-            .\KCSCommunity.Access\bin\Debug\net8.0\KCSCommunity.Access.dll `
-           v1
+          dotnet build ./KCSCommunity.Access/KCSCommunity.Access.csproj --configuration Debug
+          dotnet swagger tofile \
+            --output swagger.json \
+            ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
+            v1
       
-      # ✅ 下载 swagger-ui-dist 并解压
-      - name: Download swagger-ui-dist
-        run: |
-          curl -L https://github.com/swagger-api/swagger-ui/archive/refs/heads/master.zip -o swagger-ui.zip
-          Expand-Archive -Path swagger-ui.zip -DestinationPath .
-          Rename-Item -Path .\swagger-ui-master\dist -NewName swagger-ui
+      # ✅ 使用 Legion2/swagger-ui-action@v1.3.0 生成 Swagger UI 静态页面
+      - name: Generate Swagger UI
+        uses: Legion2/swagger-ui-action@v1.3.0
+        with:
+          output: swagger-ui
+          spec-file: swagger.json
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      # ✅ 拷贝并替换 URL
-      - name: Copy swagger.json into Swagger UI
-        run: |
-          Copy-Item -Path swagger.json -Destination .\swagger-ui\swagger.json -Force
-          (Get-Content .\swagger-ui\index.html).Replace(
-            'https://petstore.swagger.io/v2/swagger.json',
-            './swagger.json'
-          ) | Set-Content .\swagger-ui\index.html
-      
-      # ✅ 部署 Swagger UI 到 GitHub Pages
-      - name: Deploy Swagger UI to GitHub Pages
+      # ✅ 发布到 GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./swagger-ui
+          publish_dir: swagger-ui
           publish_branch: gh-pages
