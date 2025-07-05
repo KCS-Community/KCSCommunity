@@ -30,16 +30,17 @@ jobs:
     - name: Install Swagger CLI
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
         
-    - name: Add dotnet tools to PATH
-      run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-    
+    - name: Install Swagger CLI globally
+      run: |
+          dotnet tool install --global Swashbuckle.AspNetCore.Cli
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+          
     - name: Generate swagger.json
       run: |
-        dotnet build ./KCSCommunity.Access/KCSCommunity.Access.csproj --configuration Debug
-        dotnet swagger tofile \
-          --output swagger.json \
-          ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
-          v1
+              dotnet swagger tofile \
+                --output swagger.json \
+                ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
+                v1
 
     - name: Download swagger-ui-dist
       run: |
