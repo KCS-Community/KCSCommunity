@@ -8,55 +8,62 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build
-      run: dotnet build --no-restore
+      - name: Build
+        run: dotnet build --no-restore
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-        
-    - name: Install Swagger CLI
-      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-        
-    - name: Install Swagger CLI globally
-      run: |
-          dotnet tool install --global Swashbuckle.AspNetCore.Cli
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-          
-    - name: Generate swagger.json
-      run: |
-              dotnet swagger tofile \
-                --output swagger.json \
-                ./KCSCommunity.Access/bin/Debug/net8.0/KCSCommunity.Access.dll \
-                v1
-
-    - name: Download swagger-ui-dist
-      run: |
-        mkdir swagger-ui
-        curl -L https://github.com/swagger-api/swagger-ui/archive/refs/heads/master.zip -o swagger-ui.zip
-        unzip swagger-ui.zip
-        mv swagger-ui-master/dist swagger-ui
-
-    - name: Copy swagger.json into Swagger UI
-      run: |
-        cp swagger.json swagger-ui/swagger.json
-        sed -i 's|https://petstore.swagger.io/v2/swagger.json|./swagger.json|g' swagger-ui/index.html
-
-    - name: Deploy Swagger UI to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./swagger-ui
-        publish_branch: gh-pages
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+      
+      # ✅ 安装 Swagger CLI 工具
+      - name: Install Swagger CLI
+        run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
+      
+      # ✅ 将 dotnet tool 路径加入 PATH（Windows 版本）
+      - name: Add dotnet tools to PATH
+        run: echo "${env:USERPROFILE}\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+      
+      # ✅ 生成 swagger.json
+      - name: Generate swagger.json
+        run: |
+          dotnet build .\KCSCommunity.Access\KCSCommunity.Access.csproj --configuration Debug
+          dotnet swagger tofile `
+            --output swagger.json `
+            .\KCSCommunity.Access\bin\Debug\net8.0\KCSCommunity.Access.dll `
+            v1
+      
+      # ✅ 下载 swagger-ui-dist 并解压
+      - name: Download swagger-ui-dist
+        run: |
+          curl -L https://github.com/swagger-api/swagger-ui/archive/refs/heads/master.zip -o swagger-ui.zip
+          Expand-Archive -Path swagger-ui.zip -DestinationPath .
+          Rename-Item -Path .\swagger-ui-master\dist -NewName swagger-ui
+      
+      # ✅ 拷贝并替换 URL
+      - name: Copy swagger.json into Swagger UI
+        run: |
+          Copy-Item -Path swagger.json -Destination .\swagger-ui\swagger.json -Force
+          (Get-Content .\swagger-ui\index.html).Replace(
+            'https://petstore.swagger.io/v2/swagger.json',
+            './swagger.json'
+          ) | Set-Content .\swagger-ui\index.html
+      
+      # ✅ 部署 Swagger UI 到 GitHub Pages
+      - name: Deploy Swagger UI to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./swagger-ui
+          publish_branch: gh-pages
