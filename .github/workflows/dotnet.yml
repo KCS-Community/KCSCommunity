@@ -26,23 +26,18 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
-      
-      # ✅ 安装 Swagger CLI 工具
+
       - name: Install Swagger CLI
         run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-      
-      # ✅ 将 dotnet tool 路径加入 PATH（Windows 版本）
-      - name: Add dotnet tools to PATH
-        run: echo "${env:USERPROFILE}\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
-      
-      # ✅ 生成 swagger.json
+
       - name: Generate swagger.json
         run: |
+          $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
           dotnet build .\KCSCommunity.Access\KCSCommunity.Access.csproj --configuration Debug
           dotnet swagger tofile `
             --output swagger.json `
             .\KCSCommunity.Access\bin\Debug\net8.0\KCSCommunity.Access.dll `
-            v1
+           v1
       
       # ✅ 下载 swagger-ui-dist 并解压
       - name: Download swagger-ui-dist
