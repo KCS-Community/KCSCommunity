@@ -28,21 +28,24 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
+        var passwordPolicy = new PasswordPolicySettings();
+        configuration.GetSection(PasswordPolicySettings.SectionName).Bind(passwordPolicy);
+        
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
             {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequiredLength = 8;
+                options.Password.RequiredLength = passwordPolicy.RequiredLength;
+                options.Password.RequireDigit = passwordPolicy.RequireDigit;
+                options.Password.RequireLowercase = passwordPolicy.RequireLowercase;
+                options.Password.RequireUppercase = passwordPolicy.RequireUppercase;
+                options.Password.RequireNonAlphanumeric = passwordPolicy.RequireNonAlphanumeric;
+            
                 options.User.RequireUniqueEmail = true;
-                
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders(); //password reset/2FA tokens
+            .AddDefaultTokenProviders();//password reset/2FA tokens
 
         //服务
         services.AddScoped<IPasswordHasher<ApplicationUser>, Argon2PasswordHasher>();

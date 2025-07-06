@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                            <xsd:attribute name="xml:space" default="preserve" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+
+    <data name="NotEmptyValidator" xml:space="preserve">
+    <value>'{PropertyName}' is required.</value>
+  </data>
+    <data name="PasswordsCannotBeSame" xml:space="preserve">
+    <value>New password cannot be the same as the old password.</value>
+  </data>
+    <data name="UserMinimumAgeValidator" xml:space="preserve">
+    <value>User must be at least 5 years old.</value>
+  </data>
+    <data name="MinimumLengthValidator" xml:space="preserve">
+    <value>'{PropertyName}' must be at least {MinLength} characters long.</value>
+  </data>
+    <data name="PasswordUppercaseValidator" xml:space="preserve">
+    <value>Password must contain at least one uppercase letter.</value>
+  </data>
+    <data name="PasswordLowercaseValidator" xml:space="preserve">
+    <value>Password must contain at least one lowercase letter.</value>
+  </data>
+    <data name="PasswordDigitValidator" xml:space="preserve">
+    <value>Password must contain at least one digit.</value>
+  </data>
+    <data name="PasswordNonAlphanumericValidator" xml:space="preserve">
+    <value>Password must contain at least one non-alphanumeric character.</value>
+  </data>
+    
+    <data name="ActivateUserInvalidUser" xml:space="preserve">
+    <value>Invalid user.</value>
+  </data>
+    <data name="ActivateUserBusy" xml:space="preserve">
+    <value>This account is currently being processed. Please try again in a moment.</value>
+  </data>
+    <data name="ActivateUserAlreadyActive" xml:space="preserve">
+    <value>Account already active.</value>
+  </data>
+    <data name="ActivateUserInvalidOrExpiredPasscode" xml:space="preserve">
+    <value>Invalid or expired passcode.</value>
+  </data>
+  <data name="ActivateUserFailedToRemoveTemporaryPassword" xml:space="preserve">
+    <value>Failed to remove temporary password during activation.</value>
+  </data>
+  
+  <data name="CreateRoleRoleExists" xml:space="preserve">
+    <value>Role with this name already exists.</value>
+  </data>
+  
+  <data name="CreateUserCantGeneratePasscode" xml:space="preserve">
+    <value>Could not generate a unique passcode.</value>
+  </data>
+  
+  <data name="RoleCannotDeleteSystemRole" xml:space="preserve">
+    <value>Cannot delete core system roles.</value>
+  </data>
+  <data name="RoleCannotDeleteRoleWithUsers" xml:space="preserve">
+    <value>Cannot delete a role that has users assigned to it. Please reassign users first.</value>
+  </data>
+  
+  <data name="LoginInvalidUserOrPassword" xml:space="preserve">
+    <value>Invalid username or password.</value>
+  </data>
+  <data name="LoginLockedOut" xml:space="preserve">
+    <value>This account has been locked out. Please try again after {0}.</value>
+  </data>
+  <data name="LoginLockedOutPermanently" xml:space="preserve">
+    <value>This account has been locked out.</value>
+  </data>
+  <data name="LoginAccountNotActive" xml:space="preserve">
+    <value>Account is not active. Please activate your account first.</value>
+  </data>
+  <data name="LoginTimedOut" xml:space="preserve">
+    <value>This account is timed out until {0}.</value>
+  </data>
+  
+  <data name="RefreshTokenInvalidClaims" xml:space="preserve">
+    <value>Invalid token claims.</value>
+  </data>
+  <data name="RefreshTokenReuseAttempt" xml:space="preserve">
+    <value>Invalid token or potential reuse attempt.</value>
+  </data>
+  <data name="RefreshTokenUserNotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="RefreshTokenInvalidToken" xml:space="preserve">
+    <value>Invalid token.</value>
+  </data>
+  
+  <data name="UpdateUsersInRoleBusy" xml:space="preserve">
+    <value>This role is currently being modified. Please try again in a moment.</value>
+  </data>
+  <data name="UpdateUsersInRoleOwnerAtLeastOne" xml:space="preserve">
+    <value>The Owner role must have at least one user.</value>
+  </data>
+    
+</root>

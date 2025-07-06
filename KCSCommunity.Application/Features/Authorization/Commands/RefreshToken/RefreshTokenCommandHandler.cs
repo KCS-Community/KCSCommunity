@@ -8,7 +8,10 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using KCSCommunity.Abstractions.Models.Configuration;
+using KCSCommunity.Application.Resources;
 using KCSCommunity.Domain.Entities;
+using Microsoft.Extensions.Localization;
+
 namespace KCSCommunity.Application.Features.Authorization.Commands.RefreshToken;
 
 public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, LoginResponse>
@@ -17,10 +20,20 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtService _jwtService;
     private readonly JwtSettings _jwtSettings;
+    private readonly IStringLocalizer<SharedValidationMessages> _localizer;
 
-    public RefreshTokenCommandHandler(IApplicationDbContext context, UserManager<ApplicationUser> userManager, IJwtService jwtService, JwtSettings jwtSettings)
+
+    public RefreshTokenCommandHandler(IApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IJwtService jwtService,
+        JwtSettings jwtSettings,
+        IStringLocalizer<SharedValidationMessages> localizer)
     {
-        _context = context; _userManager = userManager; _jwtService = jwtService; _jwtSettings = jwtSettings;
+        _context = context;
+        _userManager = userManager;
+        _jwtService = jwtService;
+        _jwtSettings = jwtSettings;
+        _localizer = localizer;
     }
 
     public async Task<LoginResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -30,7 +43,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
         var jti = principal.FindFirstValue(JwtRegisteredClaimNames.Jti);
 
         if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId) || jti == null)
-            throw new SecurityTokenException("Invalid token claims");
+            throw new SecurityTokenException(_localizer["RefreshTokenInvalidClaims"]);
 
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
@@ -49,14 +62,14 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
                 await InvalidateUserTokensAsync(userId);
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-                throw new SecurityTokenException("Invalid token or potential reuse attempt");
+                throw new SecurityTokenException(_localizer["RefreshTokenReuseAttempt"]);
             }
             
             //标记旧的Refresh Token已被使用
             storedRefreshToken.UsedAt = DateTime.UtcNow;
 
             var user = await _userManager.FindByIdAsync(userIdStr);
-            if (user == null) throw new SecurityTokenException("User not found");
+            if (user == null) throw new SecurityTokenException("RefreshTokenUserNotFound");
             
             var roles = await _userManager.GetRolesAsync(user);
             var newAccessToken = _jwtService.GenerateToken(user, roles);
@@ -99,7 +112,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
         if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            throw new SecurityTokenException("Invalid token");
+            throw new SecurityTokenException(_localizer["RefreshTokenInvalidToken"]);
 
         return principal;
     }

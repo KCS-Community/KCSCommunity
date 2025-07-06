@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 using KCSCommunity.Abstractions.Models.Configuration;
+using KCSCommunity.Application.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace KCSCommunity.Application.Features.Users.Commands.CreateUser;
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, CreateUserResponse>
@@ -16,8 +18,20 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
     private readonly IApplicationDbContext _context;
     private readonly ILogger<CreateUserCommandHandler> _logger;
     private readonly PasscodeSettings _passcodeSettings;
-    public CreateUserCommandHandler(UserManager<ApplicationUser> userManager, IApplicationDbContext context, ILogger<CreateUserCommandHandler> logger, PasscodeSettings passcodeSettings)
-    { _userManager = userManager; _context = context; _logger = logger;_passcodeSettings = passcodeSettings; }
+    private readonly IStringLocalizer<SharedValidationMessages> _localizer;
+
+    public CreateUserCommandHandler(UserManager<ApplicationUser> userManager,
+        IApplicationDbContext context,
+        ILogger<CreateUserCommandHandler> logger,
+        PasscodeSettings passcodeSettings,
+        IStringLocalizer<SharedValidationMessages> localizer)
+    { 
+        _userManager = userManager;
+        _context = context;
+        _logger = logger;
+        _passcodeSettings = passcodeSettings;
+        _localizer = localizer;
+    }
 
     public async Task<CreateUserResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
@@ -41,7 +55,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
                 if (attempt++ >= maxRetryAttempts)
                 {
                     _logger.LogError("Failed to generate a unique OneTimePasscode after {MaxAttempts} attempts.", maxRetryAttempts);
-                    throw new InvalidOperationException("Could not generate a unique passcode.");
+                    throw new InvalidOperationException(_localizer["CreateUserCantGeneratePasscode"]);
                 }
                 passcode = OneTimePasscode.Create(user.Id, _passcodeSettings.LifespanMinutes);
             } while (await _context.OneTimePasscodes.AnyAsync(p => p.Code == passcode.Code, cancellationToken));

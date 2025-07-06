@@ -67,6 +67,26 @@ var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<PasscodeSettings>>().Value);
 
+#region 密码配置服务
+builder.Services.AddOptions<PasswordPolicySettings>()
+    .Bind(builder.Configuration.GetSection(PasswordPolicySettings.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<PasswordPolicySettings>>().Value);
+#endregion
+
+#region i18n
+builder.Services.AddLocalization();
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "en-US", "zh-CN", "zh-TW" };
+    options.SetDefaultCulture(supportedCultures[0])
+        .AddSupportedCultures(supportedCultures)
+        .AddSupportedUICultures(supportedCultures);
+});
+#endregion
+
 builder.Services
     .AddAuthentication(options =>
     {
@@ -99,6 +119,7 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+app.UseRequestLocalization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -123,7 +144,6 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-// Add our custom API signature middleware early in the pipeline
 app.UseMiddleware<ApiSignatureVerificationMiddleware>();
 
 app.UseAuthentication();

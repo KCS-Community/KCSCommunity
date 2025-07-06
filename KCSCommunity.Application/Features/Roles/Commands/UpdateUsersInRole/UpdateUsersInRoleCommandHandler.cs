@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using FluentValidation.Results;
+using KCSCommunity.Application.Resources;
 using KCSCommunity.Domain.Entities;
+using Microsoft.Extensions.Localization;
 
 namespace KCSCommunity.Application.Features.Roles.Commands.UpdateUsersInRole;
 public class UpdateUsersInRoleCommandHandler : IRequestHandler<UpdateUsersInRoleCommand>
@@ -17,10 +19,22 @@ public class UpdateUsersInRoleCommandHandler : IRequestHandler<UpdateUsersInRole
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IResourceLockService _lockService;
     private readonly ILogger<UpdateUsersInRoleCommandHandler> _logger;
+    private readonly IStringLocalizer<SharedValidationMessages> _localizer;
 
-    public UpdateUsersInRoleCommandHandler(RoleManager<IdentityRole<Guid>> roleManager, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, IResourceLockService lockService, ILogger<UpdateUsersInRoleCommandHandler> logger)
+
+    public UpdateUsersInRoleCommandHandler(RoleManager<IdentityRole<Guid>> roleManager,
+        UserManager<ApplicationUser> userManager,
+        IHttpContextAccessor httpContextAccessor,
+        IResourceLockService lockService,
+        ILogger<UpdateUsersInRoleCommandHandler> logger,
+        IStringLocalizer<SharedValidationMessages> localizer)
     {
-        _roleManager = roleManager; _userManager = userManager; _httpContextAccessor = httpContextAccessor; _lockService = lockService; _logger = logger;
+        _roleManager = roleManager;
+        _userManager = userManager;
+        _httpContextAccessor = httpContextAccessor;
+        _lockService = lockService;
+        _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task Handle(UpdateUsersInRoleCommand request, CancellationToken cancellationToken)
@@ -34,7 +48,7 @@ public class UpdateUsersInRoleCommandHandler : IRequestHandler<UpdateUsersInRole
         if (roleLock == null)
         {
             _logger.LogWarning("Could not acquire lock for role modification: {RoleId}.", request.RoleId);
-            throw new InvalidOperationException("This role is currently being modified. Please try again in a moment.");
+            throw new InvalidOperationException(_localizer["UpdateUsersInRoleBusy"]);
         }
 
         var currentUsersInRole = await _userManager.GetUsersInRoleAsync(role.Name);
@@ -46,7 +60,7 @@ public class UpdateUsersInRoleCommandHandler : IRequestHandler<UpdateUsersInRole
             var currentAdminId = Guid.Parse(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             if (!requestedUserIds.Any() || (currentUserIds.Count == 1 && !requestedUserIds.Contains(currentUserIds.Single())))
             {
-                 throw new ValidationException(new[] { new ValidationFailure("UserIds", "The Owner role must have at least one user.") });
+                 throw new ValidationException(new[] { new ValidationFailure("UserIds", _localizer["UpdateUsersInRoleOwnerAtLeastOne"]) });
             }
         }
         

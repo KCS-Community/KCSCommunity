@@ -6,6 +6,8 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation.Results;
 using KCSCommunity.Abstractions.Models.Configuration;
+using KCSCommunity.Application.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace KCSCommunity.Application.Features.Authorization.Commands.Login;
 
@@ -16,19 +18,22 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
     private readonly IApplicationDbContext _context;
     private readonly JwtSettings _jwtSettings;
+    private readonly IStringLocalizer<SharedValidationMessages> _localizer;
 
     public LoginCommandHandler(
         UserManager<ApplicationUser> userManager,
         IJwtService jwtService,
         IPasswordHasher<ApplicationUser> passwordHasher,
-        IApplicationDbContext context,          // 新增
-        JwtSettings jwtSettings)
+        IApplicationDbContext context,
+        JwtSettings jwtSettings,
+        IStringLocalizer<SharedValidationMessages> localizer)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _passwordHasher = passwordHasher;
         _context = context;
         _jwtSettings = jwtSettings;
+        _localizer = localizer;
     }
 
     public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -37,32 +42,34 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
 
         if (user == null)
         {
-            throw new ValidationException(new[] { new ValidationFailure("Login", "Invalid username or password.") });
+            throw new ValidationException(new[] { new ValidationFailure("Login", _localizer["LoginInvalidUserOrPassword"]) });
         }
         
         if (await _userManager.IsLockedOutAsync(user))
         {
             var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
             var message = lockoutEnd.HasValue 
-                ? $"This account has been locked out. Please try again after {lockoutEnd.Value.ToLocalTime():F}."
-                : "This account has been locked out.";
+                ? _localizer["LoginLockedOut", lockoutEnd.Value.ToLocalTime().ToString("F")]
+                : _localizer["LoginLockedOutPermanently"];
             throw new ValidationException(new[] { new ValidationFailure("Login", message) });
         }
 
         if (!user.IsActive)
         {
-            throw new ValidationException(new[] { new ValidationFailure("Login", "Account is not active. Please activate your account first.") });
+            var message = _localizer["LoginAccountNotActive"];
+            throw new ValidationException(new[] { new ValidationFailure("Login", message) });
         }
 
         if (user.TimeoutEndDate.HasValue && user.TimeoutEndDate.Value > DateTime.UtcNow)
         {
-            throw new ValidationException(new[] { new ValidationFailure("Login", $"This account is timed out until {user.TimeoutEndDate.Value:F}.") });
+            var message = _localizer["LoginTimedOut",user.TimeoutEndDate.Value.ToLocalTime().ToString("F")];
+            throw new ValidationException(new[] { new ValidationFailure("Login", message) });
         }
 
         if (user.PasswordHash == null)
         {
             await _userManager.AccessFailedAsync(user);
-            throw new ValidationException(new[] { new ValidationFailure("Login", "Invalid username or password.") });
+            throw new ValidationException(new[] { new ValidationFailure("Login", _localizer["LoginInvalidUserOrPassword"]) });
         }
 
         var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
@@ -70,7 +77,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         if (passwordVerificationResult == PasswordVerificationResult.Failed)
         {
             await _userManager.AccessFailedAsync(user);
-            throw new ValidationException(new[] { new ValidationFailure("Login", "Invalid username or password.") });
+            throw new ValidationException(new[] { new ValidationFailure("Login", _localizer["LoginInvalidUserOrPassword"]) });
         }
         
         //password was correct
