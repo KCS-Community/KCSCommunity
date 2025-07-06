@@ -5,21 +5,26 @@
 - [x] 添加令牌刷新机制
 - [x] 添加修改密码支持
 - [x] 使Passcode可设置有效时段
+- [x] 接口多语言支持
+  - [x] 中国简体中文cn-CN
+  - [x] 台湾正体中文cn-TW
+  - [x] 美国英语en-US
+- [x] 密码策略设置
 - [ ] 添加Passkey支持
 
 ## 技术栈
-| 类别             | 技术/库                                   | 用途与说明                                                                     |
-| ---------------- | ----------------------------------------- | ------------------------------------------------------------------------------ |
-| **框架与运行时** | .NET 8.0                                  |                                                        |
-| **架构模式**     | 领域驱动设计 (DDD), CQRS                  | 指导项目分层与设计；通过`MediatR`库实现命令查询职责分离 |
-| **数据库**       | PostgreSQL                                | 关系型数据库，善于全文查询，为后面论坛社区功能准备                                         |
-| **ORM**          | Entity Framework Core 8                   |                    |
-| **用户与认证**   | ASP.NET Core Identity                     | 提供用户管理、角色管理、密码策略等基础功能                                   |
-| **密码哈希**     | Konscious.Security.Cryptography.Argon2    | 实现了 `IPasswordHasher`，使用当前最安全的 Argon2id 算法。                 |
-| **鉴权机制**     | JWT (JSON Web Tokens)                     | 用于无状态的API鉴权，令牌短期有效，不设刷新机制以简化设计。                    |
-| **API 文档**     | Swashbuckle.AspNetCore (Swagger)          | 自动生成交互式API文档，方便前端开发和API测试。（带swagger ui）                                 |
-| **验证**         | FluentValidation                          |               |
-| **对象映射**     | AutoMapper                                |                  |
+| 类别             | 技术/库                                   | 用途与说明                                        |
+| ---------------- |----------------------------------------|----------------------------------------------|
+| **框架与运行时** | .NET 8.0                               |                                              |
+| **架构模式**     | 领域驱动设计 (DDD), CQRS                     | 指导项目分层与设计；通过`MediatR`库实现命令查询职责分离             |
+| **数据库**       | PostgreSQL                             | 关系型数据库，善于全文查询，为后面论坛社区功能准备                    |
+| **ORM**          | Entity Framework Core 8                |                                              |
+| **用户与认证**   | ASP.NET Core Identity                  | 提供用户管理、角色管理、密码策略等基础功能                        |
+| **密码哈希**     | Konscious.Security.Cryptography.Argon2 | 实现了 `IPasswordHasher`，使用当前最安全的 Argon2id 算法。  |
+| **鉴权机制**     | JWT (JSON Web Tokens)+Refresh token    | 用于无状态的API鉴权，令牌短期有效，可使用Refresh token持久化，支持吊销。 |
+| **API 文档**     | Swashbuckle.AspNetCore (Swagger)       | 自动生成交互式API文档，方便前端开发和API测试。（带swagger ui）      |
+| **验证**         | FluentValidation                       |                                              |
+| **对象映射**     | AutoMapper                             |                                              |
 
 ## API 实现
 
@@ -39,7 +44,8 @@
     1.  用户使用用户名和密码调用 `POST /api/auth/login`。
     2.  系统使用 `Argon2id` 算法验证密码。
     3.  **密码哈希升级**: 如果验证时发现用户密码的哈希参数已过时，系统会在用户无感的情况下，自动用新参数重新哈希密码并更新存储，然后正常颁发令牌。
-    4.  成功后返回一个短期有效的JWT。后续所有需要授权的请求都必须在 `Authorization` 头中携带此 `Bearer Token`。
+    4.  成功后返回一个短期有效的JWT和一个Refresh Token。后续所有需要授权的请求都必须在 `Authorization` 头中携带此 `Bearer Token`。
+    5.  JWT短期有效，到期后请使用 `POST /api/Auth/refresh` 续期，续期后原JWT和Refresh token皆会失效。
 
 *   **权限组管理 (Owner-only)**:
     *   通过 `/api/roles` 端点进行管理。
