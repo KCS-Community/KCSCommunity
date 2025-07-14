@@ -17,10 +17,8 @@ public class ApplicationUser : IdentityUser<Guid>
     [MaxLength(100)]
     public string? EnglishName { get; private set; }
 
-    [Required]
     public Gender Gender { get; private set; }
 
-    [Required]
     public DateTime DateOfBirth { get; private set; }
 
     [MaxLength(50)]
@@ -53,6 +51,8 @@ public class ApplicationUser : IdentityUser<Guid>
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     
     public DateTime UpdatedAt { get; private set; }
+    
+    public virtual ICollection<PasskeyCredential> PasskeyCredentials { get; private set; } = new List<PasskeyCredential>();
 
     // Private constructor for EF Core and Identity hydratation.
     private ApplicationUser() { }
@@ -62,11 +62,11 @@ public class ApplicationUser : IdentityUser<Guid>
     /// </summary>
     public static ApplicationUser CreateNewUser(
         string userName,
-        string email,
+        //string email,
         string realName,
         string? englishName,
-        Gender gender,
-        DateTime dateOfBirth,
+        //Gender gender,
+        //DateTime dateOfBirth,
         UserRoleType roleType,
         string? grade,
         string? house,
@@ -76,12 +76,12 @@ public class ApplicationUser : IdentityUser<Guid>
         {
             Id = Guid.NewGuid(),
             UserName = userName,
-            Email = email,
+            //Email = email,
             SecurityStamp = Guid.NewGuid().ToString("D"), // Important for security operations
             RealName = realName,
             EnglishName = englishName,
-            Gender = gender,
-            DateOfBirth = dateOfBirth,
+            //Gender = gender,
+            //DateOfBirth = dateOfBirth,
             RoleType = roleType,
             IsActive = false, // Must be activated
             CreatedAt = DateTime.UtcNow,
@@ -104,15 +104,15 @@ public class ApplicationUser : IdentityUser<Guid>
     /// <summary>
     /// Domain method to activate a user's account, enforcing business rules.
     /// </summary>
-    public void ActivateAccount(string? nickname, string? avatarUrl)
+    public void ActivateAccount(/*string? nickname, string? avatarUrl*/)
     {
         if (IsActive)
         {
             throw new InvalidOperationException("Account is already active.");
         }
 
-        Nickname = nickname;
-        AvatarUrl = avatarUrl;
+        //Nickname = nickname;
+        //AvatarUrl = avatarUrl;
         IsActive = true;
         EmailConfirmed = true; // Activating implies the user has control of the flow.
         UpdatedAt = DateTime.UtcNow;

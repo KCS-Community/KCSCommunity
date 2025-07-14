@@ -1,8 +1,8 @@
-using KCSCommunity.Application.Common.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation.Results;
-using KCSCommunity.Application.Resources;
+using KCSCommunity.Application.Shared.Exceptions;
+using KCSCommunity.Application.Shared.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace KCSCommunity.Application.Features.Roles.Commands.CreateRole;

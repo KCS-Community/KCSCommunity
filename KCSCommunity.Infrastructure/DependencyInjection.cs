@@ -1,4 +1,5 @@
 using KCSCommunity.Abstractions.Interfaces;
+using KCSCommunity.Abstractions.Interfaces.Services;
 using KCSCommunity.Abstractions.Models.Configuration;
 using KCSCommunity.Domain.Entities;
 using KCSCommunity.Infrastructure.Persistence;
@@ -9,7 +10,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace KCSCommunity.Infrastructure;
 
@@ -27,6 +27,7 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<ISessionStore, HttpSessionStore>();
 
         var passwordPolicy = new PasswordPolicySettings();
         configuration.GetSection(PasswordPolicySettings.SectionName).Bind(passwordPolicy);
@@ -50,6 +51,7 @@ public static class DependencyInjection
         //服务
         services.AddScoped<IPasswordHasher<ApplicationUser>, Argon2PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IPasskeyService, Fido2PasskeyService>();
         
         // 锁，后期考虑Redis-based
         services.AddSingleton<IResourceLockService, InMemoryLockService>();

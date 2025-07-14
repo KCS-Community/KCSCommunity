@@ -178,6 +178,52 @@ namespace KCSCommunity.Infrastructure.Migrations
                     b.ToTable("OneTimePasscodes");
                 });
 
+            modelBuilder.Entity("KCSCommunity.Domain.Entities.PasskeyCredential", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<Guid>("AaGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ApplicationUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CredType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DeviceName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("RegDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("SignatureCounter")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte[]>("UserHandle")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasskeyCredentials");
+                });
+
             modelBuilder.Entity("KCSCommunity.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -361,6 +407,21 @@ namespace KCSCommunity.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("KCSCommunity.Domain.Entities.PasskeyCredential", b =>
+                {
+                    b.HasOne("KCSCommunity.Domain.Entities.ApplicationUser", null)
+                        .WithMany("PasskeyCredentials")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("KCSCommunity.Domain.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("KCSCommunity.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("KCSCommunity.Domain.Entities.ApplicationUser", "User")
@@ -421,6 +482,11 @@ namespace KCSCommunity.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("KCSCommunity.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("PasskeyCredentials");
                 });
 #pragma warning restore 612, 618
         }

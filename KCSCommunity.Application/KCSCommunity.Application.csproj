@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoMapper" Version="15.0.0" />
+      <PackageReference Include="AutoMapper" Version="15.0.1" />
       <PackageReference Include="FluentValidation" Version="12.0.0" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
       <PackageReference Include="MediatR" Version="13.0.0" />
@@ -21,40 +21,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\KCSCommunity.Abstractions\KCSCommunity.Abstractions.csproj" />
+      <ProjectReference Include="..\KCSCommunity.Application.Shared\KCSCommunity.Application.Shared.csproj" />
       <ProjectReference Include="..\KCSCommunity.Domain\KCSCommunity.Domain.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Update="Resources\SharedValidationMessages.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>SharedValidationMessages.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\SharedValidationMessages.zh-CN.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>SharedValidationMessages.zh-CN.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\SharedValidationMessages.zh-TW.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>SharedValidationMessages.zh-TW.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="Resources\SharedValidationMessages.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>SharedValidationMessages.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\SharedValidationMessages.zh-CN.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>SharedValidationMessages.zh-CN.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\SharedValidationMessages.zh-TW.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>SharedValidationMessages.zh-TW.resx</DependentUpon>
-      </Compile>
     </ItemGroup>
 
     <ItemGroup>

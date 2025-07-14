@@ -8,7 +8,8 @@ using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 using KCSCommunity.Abstractions.Models.Configuration;
-using KCSCommunity.Application.Resources;
+using KCSCommunity.Application.Shared.Exceptions;
+using KCSCommunity.Application.Shared.Resources;
 using Microsoft.Extensions.Localization;
 
 namespace KCSCommunity.Application.Features.Users.Commands.CreateUser;
@@ -35,14 +36,14 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
 
     public async Task<CreateUserResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
-        var user = ApplicationUser.CreateNewUser(request.UserName, request.Email, request.RealName, request.EnglishName, request.Gender, request.DateOfBirth, request.RoleType, request.Grade, request.House, request.StaffTitle);
+        var user = ApplicationUser.CreateNewUser(request.UserName, /*request.Email,*/ request.RealName, request.EnglishName, /*request.Gender,*/ /*request.DateOfBirth,*/ request.RoleType, request.Grade, request.House, request.StaffTitle);
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             var tempPassword = GenerateRandomPassword();
             var identityResult = await _userManager.CreateAsync(user, tempPassword);
-            if (!identityResult.Succeeded) throw new Common.Exceptions.ValidationException(identityResult.Errors.Select(e => new FluentValidation.Results.ValidationFailure(e.Code, e.Description)));
-            
+            if (!identityResult.Succeeded) throw new ValidationException(identityResult.Errors.Select(e => new FluentValidation.Results.ValidationFailure(e.Code, e.Description)));
+
             await _userManager.SetLockoutEnabledAsync(user, true);
             await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
             await _userManager.AddToRoleAsync(user, RoleConstants.User);
@@ -59,7 +60,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
                 }
                 passcode = OneTimePasscode.Create(user.Id, _passcodeSettings.LifespanMinutes);
             } while (await _context.OneTimePasscodes.AnyAsync(p => p.Code == passcode.Code, cancellationToken));
-            
+
             await _context.OneTimePasscodes.AddAsync(passcode, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);

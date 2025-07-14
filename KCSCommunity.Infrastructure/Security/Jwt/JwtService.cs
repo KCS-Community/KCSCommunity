@@ -4,23 +4,23 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using KCSCommunity.Abstractions.Models.Configuration;
+using KCSCommunity.Abstractions.Interfaces.Services;
 
 namespace KCSCommunity.Infrastructure.Security.Jwt;
 
 public class JwtService : IJwtService
 {
-    private readonly JwtSettings _jwtSettings;
+    private readonly IAuthTokenSettings _tokenSettings;
 
-    public JwtService(JwtSettings jwtSettings)
+    public JwtService(IAuthTokenSettings tokenSettings)
     {
-        _jwtSettings = jwtSettings;
+        _tokenSettings = tokenSettings;
     }
 
     public string GenerateToken(ApplicationUser user, IEnumerable<string> roles)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
+        var key = Encoding.ASCII.GetBytes(_tokenSettings.GetSecret());
 
         var claims = new List<Claim>
         {
@@ -39,9 +39,9 @@ public class JwtService : IJwtService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
-            Issuer = _jwtSettings.Issuer,
-            Audience = _jwtSettings.Audience,
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSettings.GetAccessTokenExpiryMinutes()),
+            Issuer = _tokenSettings.GetIssuer(),
+            Audience = _tokenSettings.GetAudience(),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 

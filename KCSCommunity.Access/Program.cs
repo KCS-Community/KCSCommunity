@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using KCSCommunity.Abstractions.Interfaces;
 using KCSCommunity.Abstractions.Models.Configuration;
-using KCSCommunity.Infrastructure.Security.Jwt;
+using KCSCommunity.Application.Auth;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,11 +27,13 @@ builder.Services.AddOptions<PasscodeSettings>()
 
 // Add services from other layers
 builder.Services.AddApplicationServices();
+builder.Services.AddApplicationAuthServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Add Access layer specific services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.Configure<ApiSignatureSettings>(builder.Configuration.GetSection(ApiSignatureSettings.SectionName));
 
 builder.Services.AddControllers(options => 
@@ -66,6 +69,7 @@ var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<PasscodeSettings>>().Value);
+builder.Services.AddSingleton<IAuthTokenSettings>(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
 
 #region 密码配置服务
 builder.Services.AddOptions<PasswordPolicySettings>()
@@ -73,6 +77,18 @@ builder.Services.AddOptions<PasswordPolicySettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<PasswordPolicySettings>>().Value);
+#endregion
+
+#region FIDO
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(5);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".KCSCommunity.Fido2.Session";
+});
+
 #endregion
 
 #region i18n
@@ -116,16 +132,36 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(PolicyConstants.AdminOrOwner, policy => policy.RequireRole(RoleConstants.Administrator, RoleConstants.Owner));
 });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowNullOrigin", policy =>
+        {
+            policy.SetIsOriginAllowed(origin =>
+                {
+                    return string.Equals(origin, "null", StringComparison.OrdinalIgnoreCase)
+                           || origin == "http://localhost:5500";
+                })
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+    });
+}
 
 var app = builder.Build();
 
 app.UseRequestLocalization();
+app.UseSession();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "KCSCommunity API v1"));
+    app.UseDefaultFiles(); // Enables index.html, default.html etc.
+    app.UseStaticFiles(); 
 }
 
 using (var scope = app.Services.CreateScope())
@@ -145,7 +181,7 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ApiSignatureVerificationMiddleware>();
-
+app.UseCors("AllowNullOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 

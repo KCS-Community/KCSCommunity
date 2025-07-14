@@ -87,11 +87,11 @@ private static async Task SeedOwnerUserAsync(UserManager<ApplicationUser> userMa
         }
 
         var owner = ApplicationUser.CreateNewUser(
-            ownerUserName, ownerEmail, "System Owner", "Owner", Domain.Enums.Gender.Other,
-            new DateTime(1970, 1, 1), Domain.Enums.UserRoleType.Staff, null, null, "Owner"
+            ownerUserName, /*ownerEmail,*/ "System Owner", "Owner", /*Domain.Enums.Gender.Other,*/
+            /*new DateTime(1970, 1, 1),*/ Domain.Enums.UserRoleType.Staff, null, null, "Owner"
         );
         
-        owner.ActivateAccount("Owner", null);
+        owner.ActivateAccount();
 
         var createResult = await userManager.CreateAsync(owner, ownerPassword);
         if (!createResult.Succeeded)

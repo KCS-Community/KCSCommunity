@@ -1,4 +1,5 @@
 using AutoMapper;
+using KCSCommunity.Abstractions.Models.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passkey Debugger</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; margin: 2em; background-color: #f8f9fa; color: #212529; }
+        h1, h2 { border-bottom: 2px solid #dee2e6; padding-bottom: 0.5em; color: #343a40; }
+        div { background-color: #ffffff; border: 1px solid #ced4da; border-radius: 8px; padding: 1.5em; margin-bottom: 1.5em; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5em; }
+        input[type="text"] { width: calc(100% - 24px); padding: 10px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 1em; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 1em; margin-right: 10px; margin-top: 5px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #e9ecef; padding: 1em; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: "Courier New", Courier, monospace; }
+        hr { border: none; border-top: 1px solid #dee2e6; margin: 2em 0; }
+    </style>
+</head>
+<body>
+
+<h1>KCSCommunity Passkey Debugger</h1>
+
+<div>
+    <label for="serverUrl">Backend Server URL:</label>
+    <input type="text" id="serverUrl" value="https://localhost:7123" style="width: 400px;">
+</div>
+
+<hr>
+
+<h2>1. Registration / Activation</h2>
+<p>Use this section to activate a new user account with a Passkey, or to add a new Passkey to an existing, logged-in account.</p>
+<div>
+    <label for="regUsername">Username:</label>
+    <input type="text" id="regUsername" value="">
+    <label for="regPasscode">Passcode (only for first-time activation):</label>
+    <input type="text" id="regPasscode" placeholder="Enter one-time passcode here">
+    <label for="regDeviceName">Device Name (e.g., "My iPhone 15"):</label>
+    <input type="text" id="regDeviceName" value="Debug Browser Device">
+    <button id="btnBeginRegister">1. Begin Registration</button>
+    <button id="btnCompleteRegister">2. Complete Registration</button>
+</div>
+
+<hr>
+
+<h2>2. Authentication / Login</h2>
+<p>Use this section to log in with a previously registered Passkey.</p>
+<div>
+    <label for="authUsername">Username (optional for discoverable credentials):</label>
+    <input type="text" id="authUsername" placeholder="Leave empty to test discoverable credentials">
+    <button id="btnBeginLogin">1. Begin Login</button>
+    <button id="btnCompleteLogin">2. Complete Login</button>
+</div>
+
+<hr>
+
+<h2>Output Log</h2>
+<pre id="output">Status messages will appear here...</pre>
+
+<!-- Using the UMD bundle from a CDN for simplicity -->
+<script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
+<script>
+    // De-structure the functions we need from the SimpleWebAuthn library
+    const { startRegistration, startAuthentication } = SimpleWebAuthnBrowser;
+
+    // Get references to our DOM elements
+    const serverUrlInput = document.getElementById('serverUrl');
+    const outputLog = document.getElementById('output');
+
+    // These will hold the response from the browser's WebAuthn API calls
+    let registrationResponseFromBrowser;
+    let authenticationResponseFromBrowser;
+
+    // --- CRITICAL: Define a base options object for all fetch requests ---
+    const baseFetchOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // This is the essential fix: ensures cookies (like session cookies) are sent with cross-origin requests.
+        credentials: 'include'
+    };
+
+    function log(message, isError = false) {
+        console.log(message);
+        if (isError) {
+            console.error(message);
+        }
+        const now = new Date();
+        outputLog.textContent = `[${now.toLocaleTimeString()}] ${typeof message === 'object' ? JSON.stringify(message, null, 2) : message}\n\n` + outputLog.textContent;
+    }
+
+    function getServerUrl() {
+        // If the input is empty, use the current page's origin.
+        // This makes it work seamlessly when self-hosted.
+        return serverUrlInput.value || window.location.origin;
+    }
+
+    // --- Registration Flow ---
+    document.getElementById('btnBeginRegister').addEventListener('click', async () => {
+        const username = document.getElementById('regUsername').value;
+        const passcode = document.getElementById('regPasscode').value;
+        const deviceName = document.getElementById('regDeviceName').value;
+
+        if (!username) {
+            alert('Username is required for registration.');
+            return;
+        }
+
+        log('Step 1.1: Requesting registration options from server...');
+
+        try {
+            const response = await fetch(`${serverUrlInput.value}/api/passkey/begin-registration`, {
+                ...baseFetchOptions,
+                body: JSON.stringify({ username, passcode, deviceName })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(`Server returned an error: ${error.title || 'Unknown error'}. Details: ${error.detail || JSON.stringify(error)}`);
+            }
+
+            const options = await response.json();
+            log('Step 1.2: Received options from server. Calling browser WebAuthn API...');
+            log(options);
+
+            // This calls navigator.credentials.create()
+            registrationResponseFromBrowser = await startRegistration(options);
+            log('Step 1.3: Browser API call successful! Ready to complete registration on server.');
+            log(registrationResponseFromBrowser);
+
+        } catch (err) {
+            log(`ERROR during registration step 1: ${err.message}`, true);
+        }
+    });
+
+    document.getElementById('btnCompleteRegister').addEventListener('click', async () => {
+        if (!registrationResponseFromBrowser) {
+            alert('Please complete step 1 (Begin Registration) first.');
+            return;
+        }
+        log('Step 2.1: Sending browser attestation response to server...');
+
+        // NOTE: The server now gets context (username, etc.) from the session, so we only need to send the browser response.
+        // The command on the backend is `CompletePasskeyRegistrationCommand(AuthenticatorAttestationRawResponse AttestationResponse)`
+        const commandBody = registrationResponseFromBrowser;
+
+        try {
+            const response = await fetch(`${serverUrlInput.value}/api/passkey/complete-registration`, {
+                ...baseFetchOptions,
+                body: JSON.stringify(commandBody)
+            });
+
+            if (response.ok) {
+                log('Step 2.2: Server confirmed registration successfully! Passkey is now active.');
+            } else {
+                const error = await response.json();
+                throw new Error(`Server returned an error: ${error.title || 'Unknown error'}. Details: ${error.detail || JSON.stringify(error)}`);
+            }
+        } catch (err) {
+            log(`ERROR during registration step 2: ${err.message}`, true);
+        }
+    });
+
+    // --- Authentication Flow ---
+    document.getElementById('btnBeginLogin').addEventListener('click', async () => {
+        const username = document.getElementById('authUsername').value || null;
+        log('Step 1.1: Requesting login options from server...');
+
+        try {
+            const response = await fetch(`${serverUrlInput.value}/api/passkey/begin-login`, {
+                ...baseFetchOptions,
+                body: JSON.stringify({ username })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(`Server returned an error: ${error.title || 'Unknown error'}. Details: ${error.detail || JSON.stringify(error)}`);
+            }
+
+            const options = await response.json();
+            log('Step 1.2: Received options from server. Calling browser WebAuthn API...');
+            log(options);
+
+            // This calls navigator.credentials.get()
+            authenticationResponseFromBrowser = await startAuthentication(options);
+            log('Step 1.3: Browser API call successful! Ready to complete login on server.');
+            log(authenticationResponseFromBrowser);
+
+        } catch (err) {
+            log(`ERROR during login step 1: ${err.message}`, true);
+        }
+    });
+
+    document.getElementById('btnCompleteLogin').addEventListener('click', async () => {
+        if (!authenticationResponseFromBrowser) {
+            alert('Please complete step 1 (Begin Login) first.');
+            return;
+        }
+        log('Step 2.1: Sending browser assertion response to server...');
+
+        // The command on the backend is `CompletePasskeyLoginCommand(AuthenticatorAssertionRawResponse ClientResponse)`
+        const commandBody = authenticationResponseFromBrowser;
+
+        try {
+            const response = await fetch(`${serverUrlInput.value}/api/passkey/complete-login`, {
+                ...baseFetchOptions,
+                body: JSON.stringify(commandBody)
+            });
+
+            if (response.ok) {
+                const loginResult = await response.json();
+                log('Step 2.2: Server confirmed login successfully! JWT and Refresh Token received.');
+                log(loginResult);
+            } else {
+                const error = await response.json();
+                throw new Error(`Server returned an error: ${error.title || 'Unknown error'}. Details: ${error.detail || JSON.stringify(error)}`);
+            }
+        } catch(err) {
+            log(`ERROR during login step 2: ${err.message}`, true);
+        }
+    });
+
+</script>
+</body>
+</html>

@@ -1,5 +1,3 @@
-using KCSCommunity.Abstractions.Interfaces;
-using KCSCommunity.Application.Common.Exceptions;
 using KCSCommunity.Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using FluentValidation.Results;
-using KCSCommunity.Application.Resources;
+using KCSCommunity.Abstractions.Interfaces.Services;
+using KCSCommunity.Application.Shared.Exceptions;
+using KCSCommunity.Application.Shared.Resources;
 using KCSCommunity.Domain.Entities;
 using Microsoft.Extensions.Localization;
 
@@ -51,13 +51,13 @@ public class UpdateUsersInRoleCommandHandler : IRequestHandler<UpdateUsersInRole
             throw new InvalidOperationException(_localizer["UpdateUsersInRoleBusy"]);
         }
 
-        var currentUsersInRole = await _userManager.GetUsersInRoleAsync(role.Name);
+        var currentUsersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
         var currentUserIds = currentUsersInRole.Select(u => u.Id).ToList();
         var requestedUserIds = request.UserIds.Distinct().ToList();
 
         if (role.Name == RoleConstants.Owner)
         {
-            var currentAdminId = Guid.Parse(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            //var currentAdminId = Guid.Parse(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             if (!requestedUserIds.Any() || (currentUserIds.Count == 1 && !requestedUserIds.Contains(currentUserIds.Single())))
             {
                  throw new ValidationException(new[] { new ValidationFailure("UserIds", _localizer["UpdateUsersInRoleOwnerAtLeastOne"]) });

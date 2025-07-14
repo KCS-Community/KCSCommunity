@@ -1,6 +1,6 @@
-using KCSCommunity.Application.Features.Authorization.Commands.Login;
-using KCSCommunity.Application.Features.Authorization.Commands.RefreshToken;
-using KCSCommunity.Application.Features.Authorization.Commands.RevokeToken;
+using KCSCommunity.Application.Auth.Features.Authorization.Commands.Login;
+using KCSCommunity.Application.Auth.Features.Authorization.Commands.RefreshToken;
+using KCSCommunity.Application.Auth.Features.Authorization.Commands.RevokeToken;
 using KCSCommunity.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

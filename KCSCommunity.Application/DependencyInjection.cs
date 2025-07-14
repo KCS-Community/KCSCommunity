@@ -1,10 +1,11 @@
 using FluentValidation;
-using KCSCommunity.Application.Common.Behaviors;
-using KCSCommunity.Application.Common.Mappings;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using KCSCommunity.Application.Resources;
+using KCSCommunity.Abstractions.Interfaces.Validators;
+using KCSCommunity.Application.Shared.Behaviors;
+using KCSCommunity.Application.Shared.Mappings;
+using KCSCommunity.Application.Shared.Validators;
 
 namespace KCSCommunity.Application;
 
@@ -25,6 +26,7 @@ public static class DependencyInjection
         ValidatorOptions.Global.LanguageManager.Enabled = true;
         
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddScoped<IUserStatusValidator, UserStatusValidator>();
         
         services.AddMediatR(cfg => {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());

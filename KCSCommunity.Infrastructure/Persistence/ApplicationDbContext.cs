@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<OneTimePasscode> OneTimePasscodes => Set<OneTimePasscode>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasskeyCredential> PasskeyCredentials => Set<PasskeyCredential>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

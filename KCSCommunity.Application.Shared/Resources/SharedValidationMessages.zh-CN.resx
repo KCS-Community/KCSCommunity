@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="NotEmptyValidator" xml:space="preserve">
+    <value>“{PropertyName}”是必填项。</value>
+  </data>
+  <data name="PasswordsCannotBeSame" xml:space="preserve">
+    <value>新密码不能与旧密码相同。</value>
+  </data>
+  <data name="UserMinimumAgeValidator" xml:space="preserve">
+    <value>用户必须年满 5 岁。</value>
+  </data>
+  <data name="MinimumLengthValidator" xml:space="preserve">
+    <value>“{PropertyName}”至少需要 {MinLength} 个字符。</value>
+  </data>
+  <data name="PasswordUppercaseValidator" xml:space="preserve">
+    <value>密码必须包含至少一个大写字母。</value>
+  </data>
+  <data name="PasswordLowercaseValidator" xml:space="preserve">
+    <value>密码必须包含至少一个小写字母。</value>
+  </data>
+  <data name="PasswordDigitValidator" xml:space="preserve">
+    <value>密码必须包含至少一个数字。</value>
+  </data>
+  <data name="PasswordNonAlphanumericValidator" xml:space="preserve">
+    <value>密码必须包含至少一个非字母数字字符。</value>
+  </data>
+  <data name="ActivateUserInvalidUser" xml:space="preserve">
+    <value>无效用户。</value>
+  </data>
+  <data name="ActivateUserBusy" xml:space="preserve">
+    <value>该账号正在处理中，请稍后再试。</value>
+  </data>
+  <data name="ActivateUserAlreadyActive" xml:space="preserve">
+    <value>账号已激活。</value>
+  </data>
+  <data name="ActivateUserInvalidOrExpiredPasscode" xml:space="preserve">
+    <value>激活码无效或已过期。</value>
+  </data>
+  <data name="ActivateUserFailedToRemoveTemporaryPassword" xml:space="preserve">
+    <value>激活时无法移除临时密码。</value>
+  </data>
+  <data name="CreateRoleRoleExists" xml:space="preserve">
+    <value>该角色名称已存在。</value>
+  </data>
+  <data name="CreateUserCantGeneratePasscode" xml:space="preserve">
+    <value>无法生成唯一的激活码。</value>
+  </data>
+  <data name="RoleCannotDeleteSystemRole" xml:space="preserve">
+    <value>无法删除系统核心角色。</value>
+  </data>
+  <data name="RoleCannotDeleteRoleWithUsers" xml:space="preserve">
+    <value>无法删除有用户分配的角色，请先重新分配用户。</value>
+  </data>
+  <data name="LoginInvalidUserOrPassword" xml:space="preserve">
+    <value>用户名或密码错误。</value>
+  </data>
+  <data name="LoginLockedOut" xml:space="preserve">
+    <value>该账号已被锁定，请在 {0} 后重试。</value>
+  </data>
+  <data name="LoginLockedOutPermanently" xml:space="preserve">
+    <value>该账号已被永久锁定。</value>
+  </data>
+  <data name="LoginAccountNotActive" xml:space="preserve">
+    <value>账号未激活，请先完成激活流程。</value>
+  </data>
+  <data name="LoginTimedOut" xml:space="preserve">
+    <value>该账号已被暂停使用，解锁时间为 {0}。</value>
+  </data>
+  <data name="RefreshTokenInvalidClaims" xml:space="preserve">
+    <value>令牌声明无效。</value>
+  </data>
+  <data name="RefreshTokenReuseAttempt" xml:space="preserve">
+    <value>令牌无效或存在重复使用的风险。</value>
+  </data>
+  <data name="RefreshTokenUserNotFound" xml:space="preserve">
+    <value>未找到用户。</value>
+  </data>
+  <data name="RefreshTokenInvalidToken" xml:space="preserve">
+    <value>无效的令牌。</value>
+  </data>
+  <data name="UpdateUsersInRoleBusy" xml:space="preserve">
+    <value>该角色正在被修改中，请稍后再试。</value>
+  </data>
+  <data name="UpdateUsersInRoleOwnerAtLeastOne" xml:space="preserve">
+    <value>Owner 角色至少需要分配一位用户。</value>
+  </data>
+  <data name="PasskeyOptionsNotFound" xml:space="preserve">
+    <value>Passkey配置不存在或已过期。</value>
+  </data>
+  <data name="PasskeyUserNotFound" xml:space="preserve">
+    <value>找不到与此Passkey关联的用户。</value>
+  </data>
+</root>

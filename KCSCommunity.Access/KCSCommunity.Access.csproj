@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\KCSCommunity.Application.Auth\KCSCommunity.Application.Auth.csproj" />
       <ProjectReference Include="..\KCSCommunity.Application\KCSCommunity.Application.csproj" />
       <ProjectReference Include="..\KCSCommunity.Infrastructure\KCSCommunity.Infrastructure.csproj" />
     </ItemGroup>
